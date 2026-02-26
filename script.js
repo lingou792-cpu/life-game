@@ -67,7 +67,7 @@ function checkLifeEnd() {
   }
 }
 
-// ========== 事件库（包含你要求的所有内容） ==========
+// ========== 事件库 ==========
 const events = [
   {
     title: "小姐找上门",
@@ -86,35 +86,28 @@ const events = [
     ]
   },
   {
-    title: "嫖娼被抓",
-    desc: "你因嫖娼被警方突袭抓获。",
+    title: "颜值被夸",
+    desc: "出门逛街，陌生人夸你颜值很高。",
+    condition: () => player.face >= 70,
     options: [
-      { name: "交罚款释放", effect: () => { player.money -= 800; player.criminal = 1; player.happy -= 40; } },
-      { name: "拒绝认罚→拘留", effect: () => { player.criminal = 2; player.happy -= 60; player.body -= 15; } }
+      { name: "礼貌感谢", effect: () => { player.charm += 5; player.happy += 10; } },
+      { name: "傲娇无视", effect: () => { player.charm -= 5; player.happy += 5; } }
     ]
   },
   {
-    title: "整容",
-    desc: "你去医院进行了整容手术。",
+    title: "买房决策",
+    desc: "你有足够的存款，考虑购置房产。",
     options: [
-      { name: "微整", effect: () => { player.face += 15; player.money -= 1000; player.happy += 20; } },
-      { name: "大整", effect: () => { player.face += 30; player.money -= 3000; player.body -= 5; player.happy += 30; } }
+      { name: "买小公寓", effect: () => { player.money -= 5000; player.house = "1套(小公寓)"; player.happy += 20; } },
+      { name: "再攒攒买大的", effect: () => { player.happy -= 5; player.money += 1000; } }
     ]
   },
   {
-    title: "买房",
-    desc: "你考虑购置房产。",
+    title: "熬夜加班",
+    desc: "公司项目紧急，需要熬夜加班。",
     options: [
-      { name: "小公寓", effect: () => { player.money -= 5000; player.house = "小公寓"; player.happy += 20; } },
-      { name: "大住宅", effect: () => { player.money -= 12000; player.house = "大户型"; player.happy += 35; } }
-    ]
-  },
-  {
-    title: "车祸",
-    desc: "你遭遇了严重的车祸。",
-    options: [
-      { name: "轻伤", effect: () => { player.body -= 20; player.money -= 500; player.happy -= 25; } },
-      { name: "重伤", effect: () => { player.body -= 50; player.money -= 1500; player.happy -= 40; } }
+      { name: "通宵完成", effect: () => { player.money += 500; player.body -= 10; player.happy -= 8; } },
+      { name: "请假休息", effect: () => { player.money -= 200; player.body += 5; player.happy += 5; } }
     ]
   }
 ];
@@ -159,21 +152,32 @@ function showModal(event) {
 function modalOption(index) {
   if (currentEvent && currentEvent.options[index]) {
     currentEvent.options[index].effect();
-    nextMonth();
     updateUI();
   }
+  // 关闭事件弹窗，不再自动弹出
   document.getElementById("event-modal").classList.remove("show");
-  setTimeout(() => {
-    if (player.alive) {
-      const nextEvent = events[Math.floor(Math.random() * events.length)];
-      showModal(nextEvent);
-    } else {
-      document.getElementById("modal-title").innerText = "人生落幕";
-      document.getElementById("modal-desc").innerText = "💀 你的人生已经结束。";
-      document.getElementById("modal-buttons").innerHTML = "";
-      document.getElementById("event-modal").classList.add("show");
-    }
-  }, 1000);
+}
+
+// ========== 手动推进（核心修复） ==========
+function nextMonthManually() {
+  if (!player.alive) {
+    showModal({
+      title: "人生落幕",
+      desc: "💀 你的人生已经结束。",
+      options: []
+    });
+    return;
+  }
+
+  nextMonth();
+  updateUI();
+  
+  // 筛选符合条件的事件
+  let validEvents = events.filter(e => !e.condition || e.condition());
+  if (validEvents.length > 0) {
+    const nextEvent = validEvents[Math.floor(Math.random() * validEvents.length)];
+    showModal(nextEvent);
+  }
 }
 
 // ========== 页面导航 ==========
@@ -186,9 +190,19 @@ function showPage(page) {
   alert(`切换到页面：${page}`);
 }
 
-// ========== 游戏开始（两种模式） ==========
-function startWithRandomGender() {
+// ========== 开局选择逻辑（核心新增） ==========
+function startWithRandomGenderFromUI() {
+  document.getElementById("start-modal").classList.remove("show");
   const gender = randomGender();
+  initPlayer(gender);
+}
+
+function startWithFixedGenderFromUI(gender) {
+  document.getElementById("start-modal").classList.remove("show");
+  initPlayer(gender);
+}
+
+function initPlayer(gender) {
   player = {
     name: getDefaultName(gender),
     gender: gender,
@@ -198,31 +212,7 @@ function startWithRandomGender() {
     job: "无业", lover: null, marry: false, kids: 0, criminal: 0, alive: true
   };
   updateUI();
-  const firstEvent = events[Math.floor(Math.random() * events.length)];
-  showModal(firstEvent);
 }
 
-function startWithFixedGender(fixedGender) {
-  if (fixedGender !== "男" && fixedGender !== "女") {
-    console.error("性别必须是'男'或'女'");
-    return;
-  }
-  player = {
-    name: getDefaultName(fixedGender),
-    gender: fixedGender,
-    year: 2000, month: 1, age: 0, stage: "婴儿",
-    face: 50, height: 180, body: 60, iq: 50, eq: 37, stamina: 67, weight: 94, happy: 100,
-    money: 100, house: "0套", houseCap: 0, housePeople: 0,
-    job: "无业", lover: null, marry: false, kids: 0, criminal: 0, alive: true
-  };
-  updateUI();
-  const firstEvent = events[Math.floor(Math.random() * events.length)];
-  showModal(firstEvent);
-}
-
-// 默认使用随机性别模式
-function start() {
-  startWithRandomGender();
-}
-
-window.onload = start;
+// 页面加载直接显示开局选择弹窗
+window.onload = function() {};
