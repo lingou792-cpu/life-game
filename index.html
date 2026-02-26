@@ -64,6 +64,79 @@
         </div>
       </div>
 
+      <!-- 手动推进按钮（核心新增） -->
+      <div class="action-bar">
+        <button class="btn-next-month" onclick="nextMonthManually()">进入下个月</button>
+      </div>
+
+      <!-- 底部导航 -->
+      <div class="bottom-nav">
+        <button class="nav-btn" onclick="showPage('map')">大地图</button>
+        <button class="nav-btn" onclick="showPage('bag')">背包</button>
+        <button class="nav-btn active" onclick="showPage('family')">家庭</button>
+        <button class="nav-btn" onclick="showPage('phone')">手机</button>
+      </div>
+    </div>
+
+    <!-- 开局选择弹窗（默认显示） -->
+    <div class="modal show" id="start-modal">
+      <div class="modal-content">
+        <div class="modal-title">选择开局</div>
+        <div class="modal-desc">请选择你的性别模式：</div>
+        <div class="modal-buttons">
+          <button class="btn-green" onclick="startWithRandomGenderFromUI()">随机性别</button>
+          <button class="btn-orange" onclick="startWithFixedGenderFromUI('男')">指定男性</button>
+          <button class="btn-orange" onclick="startWithFixedGenderFromUI('女')">指定女性</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 事件弹窗（默认隐藏） -->
+    <div class="modal" id="event-modal">
+      <div class="modal-content">
+        <div class="modal-title" id="modal-title">事件</div>
+        <div class="modal-desc" id="modal-desc">事件描述</div>
+        <div class="modal-buttons" id="modal-buttons">
+          <button class="btn-green" onclick="modalOption(0)">选项一</button>
+          <button class="btn-orange" onclick="modalOption(1)">选项二</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+        </div>
+        <div class="identity-card">
+          <div class="identity-label">性别</div>
+          <div class="identity-value" id="gender">男</div>
+        </div>
+        <div class="identity-card">
+          <div class="identity-label">年龄</div>
+          <div class="identity-value" id="age">0</div>
+        </div>
+        <div class="identity-card">
+          <div class="identity-label">阶段</div>
+          <div class="identity-value" id="stage">婴儿</div>
+        </div>
+      </div>
+
+      <div class="asset-section">
+        <h3>资产</h3>
+        <div class="asset-grid">
+          <div class="asset-card">
+            <div class="asset-label">房产</div>
+            <div class="asset-value" id="house">0套</div>
+            <div class="asset-desc">容纳上限: <span id="house-cap">0</span>人<br>当前人数: <span id="house-people">0</span></div>
+          </div>
+          <div class="asset-card">
+            <div class="asset-label">银行存款</div>
+            <div class="asset-value">¥<span id="money">100</span></div>
+          </div>
+        </div>
+      </div>
+
       <!-- 底部导航 -->
       <div class="bottom-nav">
         <button class="nav-btn" onclick="showPage('map')">大地图</button>
