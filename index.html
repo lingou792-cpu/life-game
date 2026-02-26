@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人生模拟器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+      <span>14:30</span>
+      <span>5G</span>
+      <span>78%</span>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 属性区 -->
+      <div class="attr-grid">
+        <div class="attr-item">颜值<br><span id="face">50</span></div>
+        <div class="attr-item">身高<br><span id="height">180</span></div>
+        <div class="attr-item">体质<br><span id="body">60</span></div>
+        <div class="attr-item">智商<br><span id="iq">50</span></div>
+        <div class="attr-item">情商<br><span id="eq">37</span></div>
+        <div class="attr-item">体力<br><span id="stamina">67</span></div>
+        <div class="attr-item">体重<br><span id="weight">94</span></div>
+        <div class="attr-item">心情<br><span id="happy">100</span></div>
+      </div>
+
+      <!-- 身份与资产区 -->
+      <div class="identity-section">
+        <div class="identity-card">
+          <div class="identity-label">姓名</div>
+          <div class="identity-value" id="name">林晓宇</div>
+        </div>
+        <div class="identity-card">
+          <div class="identity-label">性别</div>
+          <div class="identity-value" id="gender">男</div>
+        </div>
+        <div class="identity-card">
+          <div class="identity-label">年龄</div>
+          <div class="identity-value" id="age">0</div>
+        </div>
+        <div class="identity-card">
+          <div class="identity-label">阶段</div>
+          <div class="identity-value" id="stage">婴儿</div>
+        </div>
+      </div>
+
+      <div class="asset-section">
+        <h3>资产</h3>
+        <div class="asset-grid">
+          <div class="asset-card">
+            <div class="asset-label">房产</div>
+            <div class="asset-value" id="house">0套</div>
+            <div class="asset-desc">容纳上限: <span id="house-cap">0</span>人<br>当前人数: <span id="house-people">0</span></div>
+          </div>
+          <div class="asset-card">
+            <div class="asset-label">银行存款</div>
+            <div class="asset-value">¥<span id="money">100</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部导航 -->
+      <div class="bottom-nav">
+        <button class="nav-btn" onclick="showPage('map')">大地图</button>
+        <button class="nav-btn" onclick="showPage('bag')">背包</button>
+        <button class="nav-btn active" onclick="showPage('family')">家庭</button>
+        <button class="nav-btn" onclick="showPage('phone')">手机</button>
+      </div>
+    </div>
+
+    <!-- 事件弹窗（默认隐藏） -->
+    <div class="modal" id="event-modal">
+      <div class="modal-content">
+        <div class="modal-title" id="modal-title">事件</div>
+        <div class="modal-desc" id="modal-desc">事件描述</div>
+        <div class="modal-buttons" id="modal-buttons">
+          <button class="btn-green" onclick="modalOption(0)">同意</button>
+          <button class="btn-orange" onclick="modalOption(1)">拒绝</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
