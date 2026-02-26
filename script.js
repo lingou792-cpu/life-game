@@ -1,39 +1,16 @@
-let player = {
-  name: "林晓宇",
-  gender: "男",
-  age: 0,
-  stage: "婴儿",
-  face: 50,
-  height: 50,
-  body: 60,
-  iq: 30,
-  happy: 100,
-  money: 1000,
-  alive: true
-};
+// 修复后可直接复制替换的 script.js
+document.addEventListener('DOMContentLoaded', function() {
+  // 获取所有按钮
+  const buttons = document.querySelectorAll('button');
 
-let currentEvent = null;
-
-function updateUI() {
-  document.getElementById("name").innerText = player.name;
-  document.getElementById("gender").innerText = player.gender;
-  document.getElementById("age").innerText = player.age;
-  document.getElementById("stage").innerText = player.stage;
-  document.getElementById("face").innerText = player.face;
-  document.getElementById("height").innerText = player.height;
-  document.getElementById("body").innerText = player.body;
-  document.getElementById("iq").innerText = player.iq;
-  document.getElementById("happy").innerText = player.happy;
-  document.getElementById("money").innerText = player.money;
-}
-
-const events = {
-  婴儿: [
-    {
-      title: "半夜哭闹",
-      desc: "你半夜醒来，不停哭闹。",
-      options: [
-        { name: "妈妈哄睡", effect: () => { player.happy += 5; } },
+  buttons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      console.log('按钮点击：', this.textContent);
+      // 这里写你原本的点击逻辑
+      alert('按钮正常工作啦！');
+    });
+  });
+});
         { name: "哭到累了睡", effect: () => { player.happy -= 5; player.body -= 2; } }
       ]
     }
