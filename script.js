@@ -1,39 +1,101 @@
 let player = {
   name: "林晓宇",
   gender: "男",
-  year: 2000,
-  month: 1,
   age: 0,
   stage: "婴儿",
   face: 50,
   height: 50,
   body: 60,
   iq: 30,
-  eq: 10,
-  stamina: 40,
-  weight: 3,
   happy: 100,
   money: 1000,
-  house: "0套",
-  houseCap: 0,
-  housePeople: 0,
-  job: "无业",
-  lover: null,
-  marry: false,
-  kids: 0,
-  criminal: 0,
   alive: true
 };
 
 let currentEvent = null;
 
-// ========== 性别与姓名生成 ==========
-function randomGender() {
-  return Math.random() > 0.5 ? "男" : "女";
+function updateUI() {
+  document.getElementById("name").innerText = player.name;
+  document.getElementById("gender").innerText = player.gender;
+  document.getElementById("age").innerText = player.age;
+  document.getElementById("stage").innerText = player.stage;
+  document.getElementById("face").innerText = player.face;
+  document.getElementById("height").innerText = player.height;
+  document.getElementById("body").innerText = player.body;
+  document.getElementById("iq").innerText = player.iq;
+  document.getElementById("happy").innerText = player.happy;
+  document.getElementById("money").innerText = player.money;
 }
 
-function getDefaultName(gender) {
-  return gender === "男" ? "林晓宇" : "林晓雨";
+const events = {
+  婴儿: [
+    {
+      title: "半夜哭闹",
+      desc: "你半夜醒来，不停哭闹。",
+      options: [
+        { name: "妈妈哄睡", effect: () => { player.happy += 5; } },
+        { name: "哭到累了睡", effect: () => { player.happy -= 5; player.body -= 2; } }
+      ]
+    }
+  ],
+  青年: [
+    {
+      title: "熬夜加班",
+      desc: "公司项目上线，需要熬夜加班。",
+      options: [
+        { name: "通宵完成", effect: () => { player.money += 1000; player.body -= 8; } },
+        { name: "拒绝加班", effect: () => { player.happy += 10; } }
+      ]
+    }
+  ]
+};
+
+function showModal(event) {
+  currentEvent = event;
+  document.getElementById("modal-title").innerText = event.title;
+  document.getElementById("modal-desc").innerText = event.desc;
+  const btnContainer = document.getElementById("modal-buttons");
+  btnContainer.innerHTML = "";
+  event.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = i === 0 ? "btn-green" : "btn-orange";
+    btn.innerText = opt.name;
+    btn.onclick = () => {
+      opt.effect();
+      updateUI();
+      document.getElementById("event-modal").classList.remove("show");
+    };
+    btnContainer.appendChild(btn);
+  });
+  document.getElementById("event-modal").classList.add("show");
+}
+
+function nextMonthManually() {
+  if (document.getElementById("event-modal").classList.contains("show") ||
+      document.getElementById("start-modal").classList.contains("show")) {
+    alert("请先关闭当前弹窗！");
+    return;
+  }
+
+  player.age++;
+  if (player.age >= 18) player.stage = "青年";
+  updateUI();
+
+  let currentEvents = player.age < 3 ? events.婴儿 : events.青年;
+  if (currentEvents.length > 0) {
+    const nextEvent = currentEvents[Math.floor(Math.random() * currentEvents.length)];
+    showModal(nextEvent);
+  }
+}
+
+function startWithRandomGenderFromUI() {
+  document.getElementById("start-modal").classList.remove("show");
+  player.name = Math.random() > 0.5 ? "林晓宇" : "林晓雨";
+  player.gender = player.name === "林晓宇" ? "男" : "女";
+  updateUI();
+}
+
+window.onload = function() {};
 }
 
 // ========== 时间与阶段（严格对应） ==========
