@@ -265,6 +265,324 @@ function updateUI() {
   document.getElementById("house-people").innerText = player.housePeople;
 }
 
+// ========== 弹窗逻辑（修复点击穿透） ==========
+function showModal(event) {
+  currentEvent = event;
+  document.getElementById("modal-title").innerText = event.title;
+  document.getElementById("modal-desc").innerText = event.desc;
+  const btnContainer = document.getElementById("modal-buttons");
+  btnContainer.innerHTML = "";
+  event.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = i === 0 ? "btn-green" : "btn-orange";
+    btn.innerText = opt.name;
+    btn.onclick = () => modalOption(i);
+    btnContainer.appendChild(btn);
+  });
+  const modal = document.getElementById("event-modal");
+  modal.classList.add("show");
+  // 阻止点击穿透
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      modalOption(1); // 点击空白处默认选第二个选项
+    }
+  };
+}
+
+function modalOption(index) {
+  if (currentEvent && currentEvent.options[index]) {
+    currentEvent.options[index].effect();
+    updateUI();
+  }
+  const modal = document.getElementById("event-modal");
+  modal.classList.remove("show");
+  modal.onclick = null; // 清除点击事件
+}
+
+// ========== 手动推进（修复按钮点击） ==========
+function nextMonthManually() {
+  // 先检查是否有弹窗遮挡
+  if (document.getElementById("event-modal").classList.contains("show")) {
+    alert("请先选择事件选项！");
+    return;
+  }
+  if (document.getElementById("start-modal").classList.contains("show")) {
+    alert("请先选择开局性别！");
+    return;
+  }
+
+  if (!player.alive) {
+    showModal({
+      title: "人生落幕",
+      desc: "💀 你的人生已经结束。",
+      options: []
+    });
+    return;
+  }
+
+  nextMonth();
+  updateUI();
+  
+  let currentEvents = [];
+  if (player.age < 3) currentEvents = events.婴儿;
+  else if (player.age < 6) currentEvents = events.幼儿;
+  else if (player.age < 12) currentEvents = events.童年;
+  else if (player.age < 18) currentEvents = events.少年;
+  else if (player.age < 30) currentEvents = events.青年;
+  else if (player.age < 50) currentEvents = events.中年;
+  else currentEvents = events.老年;
+
+  if (currentEvents.length > 0) {
+    const nextEvent = currentEvents[Math.floor(Math.random() * currentEvents.length)];
+    showModal(nextEvent);
+  }
+}
+
+// ========== 页面导航 ==========
+function showPage(page) {
+  // 检查是否有弹窗遮挡
+  if (document.getElementById("event-modal").classList.contains("show") ||
+      document.getElementById("start-modal").classList.contains("show")) {
+    alert("请先关闭当前弹窗！");
+    return;
+  }
+
+  const navBtns = document.querySelectorAll(".nav-btn");
+  navBtns.forEach(btn => btn.classList.remove("active"));
+  if (event && event.target.closest(".nav-btn")) {
+    event.target.closest(".nav-btn").classList.add("active");
+  }
+  alert(`切换到页面}
+
+// ========== 时间与阶段（严格对应） ==========
+function nextMonth() {
+  if (!player.alive) return;
+  player.month++;
+  if (player.month > 12) {
+    player.month = 1;
+    player.year++;
+    player.age++;
+    growAttributes();
+  }
+  updateStage();
+  checkLifeEnd();
+}
+
+function growAttributes() {
+  if (player.age < 18) {
+    player.height += Math.floor(Math.random() * 10) + 5;
+    player.weight += Math.floor(Math.random() * 3) + 2;
+    player.iq += Math.floor(Math.random() * 5) + 3;
+    player.body += 2;
+  } else {
+    if (player.age < 30) {
+      player.body += 1;
+    } else {
+      player.body -= 1;
+    }
+  }
+}
+
+function updateStage() {
+  let a = player.age;
+  if (a < 3) player.stage = "婴儿";
+  else if (a < 6) player.stage = "幼儿";
+  else if (a < 12) player.stage = "童年";
+  else if (a < 18) player.stage = "少年";
+  else if (a < 30) player.stage = "青年";
+  else if (a < 50) player.stage = "中年";
+  else if (a < 70) player.stage = "老年前期";
+  else player.stage = "晚年";
+}
+
+function checkLifeEnd() {
+  if (player.body <= 0 || player.age >= 100) {
+    player.alive = false;
+  }
+}
+
+// ========== 核心：按年龄阶段分类的事件库 ==========
+const events = {
+  婴儿: [
+    {
+      title: "半夜哭闹",
+      desc: "你半夜醒来，不停哭闹。",
+      options: [
+        { name: "妈妈哄睡", effect: () => { player.happy += 5; } },
+        { name: "哭到累了睡", effect: () => { player.happy -= 5; player.body -= 2; } }
+      ]
+    },
+    {
+      title: "学翻身",
+      desc: "妈妈教你学翻身，你能做到吗？",
+      options: [
+        { name: "努力尝试", effect: () => { player.body += 3; player.iq += 1; } },
+        { name: "躺着不动", effect: () => { player.happy += 3; } }
+      ]
+    },
+    {
+      title: "辅食时间",
+      desc: "到了吃辅食的时间，是吃甜的还是咸的？",
+      options: [
+        { name: "吃果泥", effect: () => { player.face += 1; player.happy += 2; } },
+        { name: "吃米糊", effect: () => { player.body += 2; } }
+      ]
+    }
+  ],
+  幼儿: [
+    {
+      title: "上幼儿园",
+      desc: "第一天去幼儿园，你很紧张。",
+      options: [
+        { name: "主动交友", effect: () => { player.eq += 2; } },
+        { name: "躲在角落", effect: () => { player.happy -= 5; player.iq += 1; } }
+      ]
+    },
+    {
+      title: "抢玩具",
+      desc: "小伙伴抢了你的玩具车。",
+      options: [
+        { name: "告诉老师", effect: () => { player.eq += 3; } },
+        { name: "动手抢回", effect: () => { player.body += 2; player.happy -= 3; } }
+      ]
+    }
+  ],
+  童年: [
+    {
+      title: "小学数学考试",
+      desc: "今天考数学，你复习了吗？",
+      options: [
+        { name: "认真做题", effect: () => { player.iq += 5; player.happy += 10; } },
+        { name: "偷看同桌", effect: () => { player.iq -= 2; player.happy += 5; } }
+      ]
+    },
+    {
+      title: "零花钱",
+      desc: "父母给了你10元零花钱。",
+      options: [
+        { name: "买漫画书", effect: () => { player.happy += 8; player.iq += 2; } },
+        { name: "存起来", effect: () => { player.money += 10; player.eq += 3; } }
+      ]
+    }
+  ],
+  少年: [
+    {
+      title: "中考/高考",
+      desc: "面临重要考试，压力巨大。",
+      options: [
+        { name: "通宵复习", effect: () => { player.iq += 10; player.body -= 5; player.happy -= 5; } },
+        { name: "劳逸结合", effect: () => { player.iq += 5; player.happy += 5; } }
+      ]
+    },
+    {
+      title: "暗恋同桌",
+      desc: "你偷偷暗恋同桌，想表白吗？",
+      options: [
+        { name: "写情书", effect: () => { player.eq += 5; player.happy += 8; } },
+        { name: "藏在心里", effect: () => { player.iq += 3; player.happy -= 3; } }
+      ]
+    }
+  ],
+  青年: [
+    {
+      title: "大学毕业",
+      desc: "大学毕业了，选择直接工作还是考研？",
+      options: [
+        { name: "直接工作", effect: () => { player.job = "职场新人"; player.money += 3000; } },
+        { name: "考研深造", effect: () => { player.money -= 5000; player.iq += 15; } }
+      ]
+    },
+    {
+      title: "熬夜加班",
+      desc: "公司项目上线，需要熬夜加班。",
+      options: [
+        { name: "通宵完成", effect: () => { player.money += 1000; player.body -= 8; player.happy -= 5; } },
+        { name: "拒绝加班", effect: () => { player.job = "无业"; player.happy += 10; player.money -= 500; } }
+      ]
+    },
+    {
+      title: "买房决策",
+      desc: "工作几年有了存款，考虑买房。",
+      options: [
+        { name: "买公寓", effect: () => { player.money -= 50000; player.house = "1套(公寓)"; player.happy += 20; } },
+        { name: "继续租房", effect: () => { player.money += 5000; player.happy -= 5; } }
+      ]
+    },
+    {
+      title: "小姐找上门",
+      desc: "一个周末的下午，小芳抱着孩子来到你家。她看起来瘦了很多，眼睛里充满了疲惫。她说：'亲爱的，我们的孩子出生了。我试着自己抚养，但是太辛苦了。我想把孩子交给你，或者你给我20万抚养费。请你帮帮我吧。'看着她恳求的眼神，你不知道该怎么做。",
+      options: [
+        { name: "同意抚养", effect: () => { player.kids += 1; player.happy += 5; player.money -= 2000; } },
+        { name: "支付20万", effect: () => { player.money -= 200000; player.happy -= 15; } }
+      ]
+    }
+  ],
+  中年: [
+    {
+      title: "孩子上学",
+      desc: "孩子要上小学了，选公立还是私立？",
+      options: [
+        { name: "公立学校", effect: () => { player.money -= 5000; } },
+        { name: "私立学校", effect: () => { player.money -= 20000; } }
+      ]
+    },
+    {
+      title: "投资股票",
+      desc: "朋友推荐一只股票，要不要买？",
+      options: [
+        { name: "稳健买入", effect: () => { player.money += 15000; player.happy += 10; } },
+        { name: "梭哈一把", effect: () => { player.money -= 50000; player.happy -= 30; } }
+      ]
+    },
+    {
+      title: "体检",
+      desc: "年度体检，发现血压有点高。",
+      options: [
+        { name: "健身减肥", effect: () => { player.body += 5; player.face += 2; } },
+        { name: "无所谓", effect: () => { player.body -= 5; player.happy += 3; } }
+      ]
+    }
+  ],
+  老年: [
+    {
+      title: "退休了",
+      desc: "到了退休年龄，终于可以休息了。",
+      options: [
+        { name: "带孙子", effect: () => { player.happy += 15; player.body -= 3; } },
+        { name: "去旅游", effect: () => { player.money -= 10000; player.happy += 25; } }
+      ]
+    },
+    {
+      title: "广场舞",
+      desc: "小区组织广场舞比赛，参加吗？",
+      options: [
+        { name: "积极参加", effect: () => { player.body += 5; } },
+        { name: "在家看电视", effect: () => { player.happy += 5; player.body -= 2; } }
+      ]
+    }
+  ]
+};
+
+// ========== UI更新 ==========
+function updateUI() {
+  document.getElementById("name").innerText = player.name;
+  document.getElementById("gender").innerText = player.gender;
+  document.getElementById("age").innerText = player.age;
+  document.getElementById("stage").innerText = player.stage;
+  document.getElementById("face").innerText = player.face;
+  document.getElementById("height").innerText = player.height;
+  document.getElementById("body").innerText = player.body;
+  document.getElementById("iq").innerText = player.iq;
+  document.getElementById("eq").innerText = player.eq;
+  document.getElementById("stamina").innerText = player.stamina;
+  document.getElementById("weight").innerText = player.weight;
+  document.getElementById("happy").innerText = player.happy;
+  document.getElementById("money").innerText = player.money;
+  document.getElementById("house").innerText = player.house;
+  document.getElementById("house-cap").innerText = player.houseCap;
+  document.getElementById("house-people").innerText = player.housePeople;
+}
+
 // ========== 弹窗逻辑 ==========
 function showModal(event) {
   currentEvent = event;
